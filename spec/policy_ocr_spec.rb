@@ -24,4 +24,31 @@ describe PolicyOcr::PolicyNumberParser do
       expect(parsed_numbers).to include("123456789")
     end
   end
+
+  context "checksum calculations work correctly" do
+    it 'returns the correct checksum for a valid policy number' do
+      policy_number = "345882865"
+      expect(parser.send(:calculate_checksum, policy_number)).to eq(0)
+    end
+
+    it 'returns the correct checksum for another valid policy number' do
+      policy_number = "123456789"
+      expect(parser.send(:calculate_checksum, policy_number)).to eq(0)
+    end
+
+    it 'returns the correct checksum for a policy number with leading zeros' do
+      policy_number = "000987654"
+      expect(parser.send(:calculate_checksum, policy_number)).to eq(0)
+    end
+
+    it 'returns the correct checksum for a policy number with trailing zeros' do
+      policy_number = "987654000"
+      expect(parser.send(:calculate_checksum, policy_number)).to eq(7)
+    end
+
+    it 'returns the correct checksum for a policy number with all zeros' do
+      policy_number = "111111111"
+      expect(parser.send(:calculate_checksum, policy_number)).to eq(1)
+    end
+  end
 end

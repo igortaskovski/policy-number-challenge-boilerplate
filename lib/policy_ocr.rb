@@ -27,7 +27,14 @@ module PolicyOcr
       File.foreach(@file_path).each_slice(4) do |policy_number|
         policy_numbers << parse_single_number(policy_number)
       end
+
       policy_numbers
+    end
+
+    # Check if a policy number is valid
+    def valid_policy_number?(policy_number)
+      checksum = calculate_checksum(policy_number)
+      checksum == 0
     end
 
     private
@@ -54,6 +61,15 @@ module PolicyOcr
       end
 
       digits
+    end
+
+    # Calculate the checksum for a policy number
+    def calculate_checksum(policy_number)
+      sum = 0
+      policy_number.chars.reverse_each.with_index(1) do |digit, index|
+        sum += digit.to_i * index
+      end
+      sum % 11
     end
   end
 end
