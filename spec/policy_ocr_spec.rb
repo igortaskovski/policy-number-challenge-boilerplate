@@ -16,12 +16,27 @@ describe PolicyOcr::PolicyNumberParser do
 
   context "parsing the policy numbers" do
     it "parses the numbers correctly" do
-      expect(parser.parse_policy_numbers).to eq(["000000000", "111111111", "222222222", "333333333", "444444444", "555555555", "666666666", "777777777", "888888888", "999999999", "123456789", "5?55555?5"])
+      expect(parser.parse_policy_numbers).to eq(
+        ["000000000", "111111111", "222222222", "333333333",
+        "444444444", "555555555", "666666666", "777777777",
+        "888888888", "999999999", "123456789", "5?55555?5"])
     end
 
     it "parses each number individually" do
       parsed_numbers = parser.parse_policy_numbers
       expect(parsed_numbers).to include("123456789")
+    end
+  end
+
+  context "parsing a single number" do
+    it "parses a valid single number correctly" do
+      number = ["    _  _     _  _  _  _  _ \n", "  | _| _||_||_ |_   ||_||_|\n", "  ||_  _|  | _||_|  ||_| _|\n", "                           \n"]
+      expect(parser.send(:parse_single_number, number)).to eq("123456789")
+    end
+
+    it "parses a illegible single number correctly" do
+      number = [" _  _  _  _  _  _  _     _ \n", "|_ |  |_ |_ |_ |_ |_ |_ |_ \n", " _| _| _| _| _| _| _| _| _|\n", " "]
+      expect(parser.send(:parse_single_number, number)).to eq("5?55555?5")
     end
   end
 

@@ -34,9 +34,17 @@ module PolicyOcr
     def parse_policy_numbers
       policy_numbers = []
 
-      # Read the file line by line and parse each policy number
-      File.foreach(@file_path).each_slice(4) do |policy_number|
-        policy_numbers << parse_single_number(policy_number)
+      begin
+        # Read the file line by line and parse each policy number
+        File.foreach(@file_path).each_slice(4) do |policy_number|
+          policy_numbers << parse_single_number(policy_number)
+        end
+      rescue Errno::ENOENT => e
+        raise "Error: File not found - #{@file_path}"
+      rescue Errno::EACCES => e
+        raise "Error: Permission denied - #{@file_path}"
+      rescue StandardError => e
+        raise "Error parsing policy numbers: #{e.message}"
       end
 
       policy_numbers
@@ -70,26 +78,33 @@ module PolicyOcr
 
     # Parse a single policy number
     def parse_single_number(policy_number)
-      policy_number.pop
-      placeholder = Array.new(9, '')
+      raise ArgumentError, "Invalid policy number format" unless policy_number.is_a?(Array) && policy_number.size == 4
 
-      policy_number.each do |line|
-        line.scan(/.{3}/).each_with_index do |digit, i|
-          placeholder[i] += digit
+      begin
+        policy_number.pop
+        placeholder = Array.new(9, '')
+
+        policy_number.each do |line|
+          line.scan(/.{3}/).each_with_index do |digit, i|
+            placeholder[i] += digit
+          end
         end
-      end
 
-      digits = ""
+        digits = ""
 
-      placeholder.each do |p|
-        if DIGIT_MAP.key?(p)
-          digits += DIGIT_MAP[p].to_s
-        else
-          digits += "?"
+        placeholder.each do |p|
+          if DIGIT_MAP.key?(p)
+            digits += DIGIT_MAP[p].to_s
+          else
+            digits += "?"
+          end
         end
-      end
 
-      digits
+        digits
+
+      rescue StandardError => e
+        raise "Error parsing single policy number: #{e.message}"
+      end
     end
 
     # Calculate the checksum for a policy number
