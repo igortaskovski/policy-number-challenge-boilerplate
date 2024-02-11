@@ -1,6 +1,10 @@
 module PolicyOcr
   class PolicyNumberParser
+    require_relative 'file_helper'
+    require_relative 'checksum_helper'
     require 'pry'
+    include FileHelper
+    include ChecksumHelper
 
     DIGIT_MAP = {
       " _ | ||_|" => 0,
@@ -25,7 +29,8 @@ module PolicyOcr
       policy_numbers = parse_policy_numbers
       puts("policy_numbers: #{policy_numbers}")
       processed_numbers = process_policy_numbers(policy_numbers)
-      write_to_file(@output_file_path, processed_numbers)
+      # Write the policy numbers to a file
+      FileHelper.write_to_file(@output_file_path, processed_numbers)
     rescue StandardError => e
       puts "Error processing policy numbers: #{e.message}"
     end
@@ -52,26 +57,13 @@ module PolicyOcr
 
     # Check if a policy number is valid
     def valid_policy_number?(policy_number)
-      checksum = calculate_checksum(policy_number)
+      checksum = ChecksumHelper.calculate_checksum(policy_number)
       checksum == 0
     end
 
     # Check if a policy number is illegible
     def illegible_policy_number?(policy_number)
       policy_number.include?("?")
-    end
-
-    # Write the policy numbers to a file
-    def write_to_file(output_path, policy_numbers)
-      begin
-        File.open(output_path, "w") do |f|
-          policy_numbers.each do |policy_number|
-            f.puts policy_number
-          end
-        end
-      rescue StandardError => e
-        puts "Error writing to file: #{e.message}"
-      end
     end
 
     private
@@ -105,15 +97,6 @@ module PolicyOcr
       rescue StandardError => e
         raise "Error parsing single policy number: #{e.message}"
       end
-    end
-
-    # Calculate the checksum for a policy number
-    def calculate_checksum(policy_number)
-      sum = 0
-      policy_number.chars.reverse_each.with_index(1) do |digit, index|
-        sum += digit.to_i * index
-      end
-      sum % 11
     end
 
     # Process policy numbers to find invalid and illegible numbers
