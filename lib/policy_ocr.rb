@@ -1,6 +1,5 @@
 module PolicyOcr
   class PolicyNumberParser
-    FILE_OUTPUT_PATH = "./output/policy_numbers.txt"
     require 'pry'
 
     DIGIT_MAP = {
@@ -16,8 +15,9 @@ module PolicyOcr
       " _ |_| _|" => 9
     }
 
-    def initialize(file_path)
-      @file_path = file_path
+    def initialize(input_file_path, output_file_path)
+      @input_file_path = input_file_path
+      @output_file_path = output_file_path
     end
 
     # Process the policy numbers and write the results to a file
@@ -25,7 +25,7 @@ module PolicyOcr
       policy_numbers = parse_policy_numbers
       puts("policy_numbers: #{policy_numbers}")
       processed_numbers = process_policy_numbers(policy_numbers)
-      write_to_file(FILE_OUTPUT_PATH, processed_numbers)
+      write_to_file(@output_file_path, processed_numbers)
     rescue StandardError => e
       puts "Error processing policy numbers: #{e.message}"
     end
@@ -36,7 +36,7 @@ module PolicyOcr
 
       begin
         # Read the file line by line and parse each policy number
-        File.foreach(@file_path).each_slice(4) do |policy_number|
+        File.foreach(@input_file_path).each_slice(4) do |policy_number|
           policy_numbers << parse_single_number(policy_number)
         end
       rescue Errno::ENOENT => e

@@ -1,8 +1,9 @@
 require_relative '../lib/policy_ocr'
 
 describe PolicyOcr::PolicyNumberParser do
-  let(:file_path) { File.expand_path("../fixtures/sample.txt", __FILE__) }
-  let(:parser) { described_class.new(file_path) }
+  let(:input_file_path) { File.expand_path("../fixtures/sample.txt", __FILE__) }
+  let(:output_file_path) { File.expand_path("../../output/output.txt", __FILE__) }
+  let(:parser) { described_class.new(input_file_path, output_file_path) }
 
   context "file loading" do
     it "loads" do
