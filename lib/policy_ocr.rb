@@ -1,5 +1,6 @@
 module PolicyOcr
   class PolicyNumberParser
+    FILE_OUTPUT_PATH = "./output/policy_numbers.txt"
     require 'pry'
 
     DIGIT_MAP = {
@@ -19,6 +20,16 @@ module PolicyOcr
       @file_path = file_path
     end
 
+    # Process the policy numbers and write the results to a file
+    def process
+      policy_numbers = parse_policy_numbers
+      puts("policy_numbers: #{policy_numbers}")
+      processed_numbers = process_policy_numbers(policy_numbers)
+      write_to_file(FILE_OUTPUT_PATH, processed_numbers)
+    rescue StandardError => e
+      puts "Error processing policy numbers: #{e.message}"
+    end
+
     # Parse the policy numbers from the file
     def parse_policy_numbers
       policy_numbers = []
@@ -35,6 +46,24 @@ module PolicyOcr
     def valid_policy_number?(policy_number)
       checksum = calculate_checksum(policy_number)
       checksum == 0
+    end
+
+    # Check if a policy number is illegible
+    def illegible_policy_number?(policy_number)
+      policy_number.include?("?")
+    end
+
+    # Write the policy numbers to a file
+    def write_to_file(output_path, policy_numbers)
+      begin
+        File.open(output_path, "w") do |f|
+          policy_numbers.each do |policy_number|
+            f.puts policy_number
+          end
+        end
+      rescue StandardError => e
+        puts "Error writing to file: #{e.message}"
+      end
     end
 
     private
@@ -70,6 +99,27 @@ module PolicyOcr
         sum += digit.to_i * index
       end
       sum % 11
+    end
+
+    # Process policy numbers to find invalid and illegible numbers
+    def process_policy_numbers(policy_numbers)
+      processed_policy_numbers = []
+
+      policy_numbers.each do |policy_number|
+        case
+          # Check for illegible policy numbers and append " ILL"
+          when illegible_policy_number?(policy_number)
+            processed_policy_numbers << "#{policy_number} ILL"
+          # Check for invalid policy numbers and append " ERR"
+          when !valid_policy_number?(policy_number)
+            processed_policy_numbers << "#{policy_number} ERR"
+          else
+            # Valid policy numbers
+            processed_policy_numbers << policy_number
+        end
+      end
+
+      processed_policy_numbers
     end
   end
 end
