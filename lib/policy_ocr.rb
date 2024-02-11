@@ -1,10 +1,10 @@
 module PolicyOcr
   class PolicyNumberParser
-    require_relative 'file_helper'
     require_relative 'checksum_helper'
-    require 'pry'
-    include FileHelper
+    require_relative 'file_helper'
     include ChecksumHelper
+    include FileHelper
+    require 'pry'
 
     DIGIT_MAP = {
       " _ | ||_|" => 0,
@@ -27,7 +27,6 @@ module PolicyOcr
     # Process the policy numbers and write the results to a file
     def process
       policy_numbers = parse_policy_numbers
-      puts("policy_numbers: #{policy_numbers}")
       processed_numbers = process_policy_numbers(policy_numbers)
       # Write the policy numbers to a file
       FileHelper.write_to_file(@output_file_path, processed_numbers)
